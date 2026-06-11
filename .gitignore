@@ -1,0 +1,42 @@
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Large X-Ray Dataset (Important!)
+chest_xray_3class/
+
+# Deep Learning Models & Weights
+*.keras
+*.h5
+*.pkl
+checkpoints_3class/
+model/
+
+# Databases & local user data
+instance/
+*.db
+
+# User Uploads
+uploads/
+static/uploads/
+
+# ─── IGNORE DOCS & TEXT FILES ───
+# Ignore all Word documents
+*.docx
+
+# Ignore all text files
+*.txt
+
+# BUT allow requirements.txt (Un-ignore it)
+!requirements.txt
+
+# OS-specific files
+.DS_Store
+Thumbs.db
