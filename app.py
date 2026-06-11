@@ -317,31 +317,26 @@ def server_error(e):
     return render_template('500.html'), 500
 
 # ============================================================================
-# INITIALIZE DATABASE AND RUN
+# INITIALIZE DATABASE & LOAD MODEL AT STARTUP (Required for Gunicorn/Render)
 # ============================================================================
 
-def init_db():
-    """Initialize database"""
-    with app.app_context():
-        db.create_all()
-        print("✅ Database initialized!")
+with app.app_context():
+    db.create_all()
+    print("✅ Database initialized successfully!")
+
+# Load Keras Model
+load_pneumonia_model()
+
+# ============================================================================
+# RUN (Only used for local testing)
+# ============================================================================
 
 if __name__ == '__main__':
     print("="*70)
     print(" "*15 + "PNEUMONIA DETECTION WEB APP")
     print("="*70)
-    
-    # Initialize database
-    init_db()
-    
-    # Load model
-    if load_pneumonia_model():
-        print("\n🚀 Starting Flask server...")
-        print("📱 Open your browser and go to: http://localhost:5000")
-        print("🛑 Press Ctrl+C to stop\n")
-        print("="*70)
-        app.run(debug=True, host='0.0.0.0', port=5000)
-    else:
-        print("\n❌ Failed to load model!")
-        print("Make sure 'pneumonia_detection_3class.keras' is in the same folder")
-        print("="*70)
+    print("\n🚀 Starting local Flask server...")
+    print("📱 Open your browser and go to: http://localhost:5000")
+    print("🛑 Press Ctrl+C to stop\n")
+    print("="*70)
+    app.run(debug=True, host='0.0.0.0', port=5000)
