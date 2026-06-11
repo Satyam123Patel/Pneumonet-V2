@@ -314,7 +314,11 @@ def too_large(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    return render_template('500.html'), 500
+    import traceback
+    err_msg = traceback.format_exc()
+    print("Detailed 500 Error Traceback:")
+    print(err_msg)
+    return f"<h3>Internal Server Error</h3><pre>{err_msg}</pre>", 500
 
 # ============================================================================
 # INITIALIZE DATABASE & LOAD MODEL AT STARTUP (Required for Gunicorn/Render)
