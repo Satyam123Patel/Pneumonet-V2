@@ -1,0 +1,35 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Local databases
+*.db
+instance/
+
+# Large datasets
+chest_xray_3class/
+chest_xray/
+
+# Uploaded user images
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Checkpoint model files (exclude final production model if desired)
+checkpoints_3class/
+best_model_phase1.keras
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,12 @@
+flask
+flask-sqlalchemy
+flask-login
+flask-wtf
+email-validator
+numpy
+opencv-python
+tensorflow>=2.16.0
+scikit-learn
+seaborn
+matplotlib
+Pillow
