@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Pneumonia Detection System{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="mb-5">
+        <i class="fas fa-lungs" style="font-size: 120px; color: #667eea;"></i>
+    </div>
+    
+    <h1 class="display-3 fw-bold mb-4" style="color: #667eea;">
+        Pneumonia Detection System
+    </h1>
+    
+    <p class="lead text-muted mb-4" style="font-size: 1.3rem;">
+        Upload your chest X-ray images to detect pneumonia using advanced AI technology.
+    </p>
+    
+    <div class="row mt-5 mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-brain fa-3x mb-3" style="color: #667eea;"></i>
+                    <h5 class="card-title">AI-Powered</h5>
+                    <p class="card-text text-muted">
+                        Advanced deep learning model with 71% accuracy
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-bolt fa-3x mb-3" style="color: #667eea;"></i>
+                    <h5 class="card-title">Instant Results</h5>
+                    <p class="card-text text-muted">
+                        Get predictions in seconds with confidence scores
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-shield-alt fa-3x mb-3" style="color: #667eea;"></i>
+                    <h5 class="card-title">3-Class Detection</h5>
+                    <p class="card-text text-muted">
+                        Detects Normal, Pneumonia, and Non-X-ray images
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if current_user.is_authenticated %}
+        <div class="mt-5">
+            <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg px-5 py-3 me-3">
+                <i class="fas fa-upload"></i> Start Detection
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg px-5 py-3">
+                <i class="fas fa-tachometer-alt"></i> View Dashboard
+            </a>
+        </div>
+    {% else %}
+        <div class="mt-5">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-5 py-3 me-3">
+                <i class="fas fa-sign-in-alt"></i> Login to Start
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-5 py-3">
+                <i class="fas fa-user-plus"></i> Create Account
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Medical Disclaimer -->
+    <div class="alert alert-warning mt-5" style="max-width: 800px; margin: 0 auto;">
+        <h5>
+            <i class="fas fa-exclamation-triangle"></i> Important Medical Disclaimer
+        </h5>
+        <p class="mb-0">
+            This AI tool is for <strong>educational and research purposes only</strong>. 
+            It is NOT a medical device and should NOT be used for actual medical diagnosis. 
+            Always consult qualified healthcare professionals for medical advice.
+        </p>
+    </div>
+</div>
+{% endblock %}
