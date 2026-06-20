@@ -95,7 +95,15 @@ def allowed_file(filename):
 
 def predict_image(image_path):
     """Predict pneumonia from uploaded image"""
+    global model
     try:
+        # Lazy model loading
+        if model is None:
+            load_pneumonia_model()
+        if model is None:
+            print("[ERROR] Model is not loaded")
+            return None
+            
         # Read and preprocess image
         img = cv2.imread(image_path)
         if img is None:
@@ -327,9 +335,6 @@ def server_error(e):
 with app.app_context():
     db.create_all()
     print("[SUCCESS] Database initialized successfully!")
-
-# Load Keras Model
-load_pneumonia_model()
 
 # ============================================================================
 # RUN (Only used for local testing)

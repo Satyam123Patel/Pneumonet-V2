@@ -4,9 +4,10 @@ flask-login
 flask-wtf
 email-validator
 numpy
-opencv-python
+opencv-python-headless
 tensorflow>=2.16.0
 scikit-learn
 seaborn
 matplotlib
 Pillow
+gunicorn
