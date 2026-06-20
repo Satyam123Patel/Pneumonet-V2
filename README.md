@@ -20,7 +20,7 @@ Live Demo URL: `https://<your-deployed-app-url>.com` (Update this once deployed)
 ## 💻 Local Setup Instructions
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/Pneumonet-V2.git
+git clone https://github.com/Satyam123Patel/Pneumonet-V2.git
 cd Pneumonet-V2
 2. Install Dependencies
 Ensure you have Python 3.10 to 3.12 installed, then run:
