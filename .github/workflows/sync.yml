@@ -19,5 +19,5 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config --global user.name "Satyam123Patel"
-          git remote add space https://Satyam123Patel:$HF_TOKEN@huggingface.co/spaces/Satyam-work/Pneumonet-V2
+          git remote add space https://Satyam-work:$HF_TOKEN@huggingface.co/spaces/Satyam-work/Pneumonet-V2
           git push --force space main
