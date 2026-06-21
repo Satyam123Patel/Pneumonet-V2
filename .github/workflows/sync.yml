@@ -20,4 +20,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          huggingface-cli upload Satyam-work/Pneumonet-V2 . . --repo-type space --token $HF_TOKEN
+          hf upload Satyam-work/Pneumonet-V2 . . --repo-type space --token $HF_TOKEN
