@@ -1,3 +1,12 @@
+---
+title: Pneumonet V2
+emoji: 🩺
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # Pneumonet-V2: Pneumonia Detection Web Application (3-Class Model)
 Pneumonet-V2 is a deep learning web application built using Flask and TensorFlow. It allows users to upload chest X-ray images to detect the presence of pneumonia. The model distinguishes between healthy lungs, lungs infected with pneumonia, and non-X-ray images (such as regular color photos) to prevent incorrect inputs.
 Live Demo URL: `https://<your-deployed-app-url>.com` (Update this once deployed)
