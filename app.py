@@ -3,16 +3,17 @@ Complete Pneumonia Detection Web Application
 With User Authentication, Prediction History, and Database
 """
 
+import os
+
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-import os
 import numpy as np
 import cv2
-from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -82,7 +83,7 @@ def load_pneumonia_model():
     """Load the trained model"""
     global model
     try:
-        model = load_model('model/best_model_final_3class.keras')
+        model = tf.keras.models.load_model('model/best_model_final_3class.keras')
         print("[SUCCESS] Model loaded successfully!")
         return True
     except Exception as e:
@@ -133,7 +134,7 @@ def predict_image(image_path):
         
     except Exception as e:
         print(f"Prediction error: {e}")
-        return None
+        raise e
 
 # ============================================================================
 # ROUTES - AUTHENTICATION
