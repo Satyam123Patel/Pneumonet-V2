@@ -84,10 +84,14 @@ def load_pneumonia_model():
     global model
     try:
         model = tf.keras.models.load_model('model/best_model_final_3class.keras')
-        print("[SUCCESS] Model loaded successfully!")
+        import sys
+        print("[SUCCESS] Model loaded successfully!", file=sys.stderr, flush=True)
         return True
     except Exception as e:
-        print(f"[ERROR] Error loading model: {e}")
+        import sys
+        import traceback
+        print(f"[ERROR] Error loading model: {e}", file=sys.stderr, flush=True)
+        traceback.print_exc(file=sys.stderr)
         return False
 
 def allowed_file(filename):
