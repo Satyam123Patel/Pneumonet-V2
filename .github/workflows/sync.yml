@@ -20,4 +20,4 @@ jobs:
         run: |
           git config --global user.name "Satyam123Patel"
           git remote add space https://Satyam-work:$HF_TOKEN@huggingface.co/spaces/Satyam-work/Pneumonet-V2
-          git push --force space main
+          git push --force space HEAD:main
