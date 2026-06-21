@@ -12,12 +12,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          lfs: true
 
-      - name: Push to hub
+      - name: Install Hugging Face Hub
+        run: pip install huggingface_hub
+
+      - name: Upload to Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git config --global user.name "Satyam123Patel"
-          git remote add space https://Satyam-work:$HF_TOKEN@huggingface.co/spaces/Satyam-work/Pneumonet-V2
-          git push --force space HEAD:main
+          huggingface-cli upload Satyam-work/Pneumonet-V2 . . --repo-type space --token $HF_TOKEN
