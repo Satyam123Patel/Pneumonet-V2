@@ -79,12 +79,35 @@ def load_user(user_id):
 # MODEL LOADING
 # ============================================================================
 
+def create_pneumonia_model():
+    """Create the model architecture matching the trained model"""
+    base_model = tf.keras.applications.EfficientNetB0(
+        weights=None,
+        include_top=False,
+        input_shape=(224, 224, 3)
+    )
+    inputs = tf.keras.Input(shape=(224, 224, 3))
+    x = base_model(inputs, training=False)
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(256, activation='relu')(x)
+    x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(128, activation='relu')(x)
+    x = tf.keras.layers.Dropout(0.3)(x)
+    outputs = tf.keras.layers.Dense(3, activation='softmax')(x)
+    model = tf.keras.Model(inputs, outputs)
+    return model
+
 def load_pneumonia_model():
     """Load the trained model"""
     global model
     try:
-        model = tf.keras.models.load_model('model/best_model_final_3class.keras')
         import sys
+        print("Initializing model architecture...", file=sys.stderr, flush=True)
+        model = create_pneumonia_model()
+        print("Loading weights into model...", file=sys.stderr, flush=True)
+        model.load_weights('model/best_model_final_3class.keras')
         print("[SUCCESS] Model loaded successfully!", file=sys.stderr, flush=True)
         return True
     except Exception as e:
