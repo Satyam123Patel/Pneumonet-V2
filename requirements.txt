@@ -5,10 +5,10 @@ flask-wtf
 email-validator
 numpy
 opencv-python-headless
-tensorflow>=2.16.0
+tensorflow==2.17.0
 scikit-learn
 seaborn
 matplotlib
 Pillow
 gunicorn
-tf_keras
+

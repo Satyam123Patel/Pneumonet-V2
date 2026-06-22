@@ -4,7 +4,6 @@ With User Authentication, Prediction History, and Database
 """
 
 import os
-os.environ['TF_USE_LEGACY_KERAS'] = '1'
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
