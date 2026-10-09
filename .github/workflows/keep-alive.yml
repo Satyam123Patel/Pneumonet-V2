@@ -1,0 +1,23 @@
+name: Keep Hugging Face Space Alive
+
+on:
+  schedule:
+    # Runs every 6 hours (UTC) to prevent Hugging Face from sleeping
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  keep-alive:
+    name: Ping Space URL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive HTTP request
+        run: |
+          echo "Pinging Hugging Face Space at https://satyam-work-pneumonet-v2.hf.space..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://satyam-work-pneumonet-v2.hf.space" || true)
+          echo "Received HTTP status: $STATUS"
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "301" ] || [ "$STATUS" = "302" ]; then
+            echo "Space is alive and healthy!"
+          else
+            echo "Space ping sent (status: $STATUS)."
+          fi
