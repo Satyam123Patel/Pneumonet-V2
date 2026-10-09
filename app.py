@@ -22,6 +22,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pneumonia_detection.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max file size
+# Enable session cookies to work inside Hugging Face Spaces iframe
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
 
 # Initialize extensions
 db = SQLAlchemy(app)
