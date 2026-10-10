@@ -14,9 +14,36 @@
             </p>
         </div>
         
+        <!-- Guest Quota Banner -->
+        {% if not current_user.is_authenticated %}
+        <div class="alert {% if remaining_trials > 0 %}alert-info{% else %}alert-warning{% endif %} d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <strong><i class="fas fa-user-clock"></i> Free Guest Trial:</strong>
+                {% if remaining_trials > 0 %}
+                    You have <strong>{{ remaining_trials }}</strong> of {{ free_limit }} free predictions remaining.
+                {% else %}
+                    You have used all {{ free_limit }} free guest predictions!
+                {% endif %}
+            </div>
+            <div>
+                <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Sign Up for Unlimited</a>
+                <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-secondary">Login</a>
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Upload Form -->
         <div class="card border-0 shadow mb-4">
             <div class="card-body p-5">
+                {% if not current_user.is_authenticated and remaining_trials <= 0 %}
+                <div class="text-center py-4">
+                    <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                    <h4>Free Trial Limit Reached</h4>
+                    <p class="text-muted">You have used your {{ free_limit }} free predictions. Please sign up or login to continue analyzing X-rays, access your prediction history, and view full reports.</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Create Free Account</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Login</a>
+                </div>
+                {% else %}
                 <form method="POST" enctype="multipart/form-data">
                     <div class="mb-4">
                         <label for="images" class="form-label">
@@ -38,6 +65,7 @@
                         </button>
                     </div>
                 </form>
+                {% endif %}
             </div>
         </div>
         
@@ -116,9 +144,15 @@
                     <a href="{{ url_for('predict') }}" class="btn btn-primary">
                         <i class="fas fa-redo"></i> Upload More Images
                     </a>
+                    {% if current_user.is_authenticated %}
                     <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
                         <i class="fas fa-tachometer-alt"></i> Go to Dashboard
                     </a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-success">
+                        <i class="fas fa-user-plus"></i> Sign Up to Save Predictions & View History
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

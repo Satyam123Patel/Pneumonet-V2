@@ -5,7 +5,7 @@ With User Authentication, Prediction History, and Database
 
 import os
 
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -17,14 +17,16 @@ import tensorflow as tf
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'pneumonet-v2-secure-production-key-9921')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pneumonia_detection.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max file size
-# Enable session cookies to work inside Hugging Face Spaces iframe
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE'] = True
+
+# Dynamic cookie configuration: Secure only when running in production or behind HTTPS
+is_dev = os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG', 'False').lower() in ('true', '1')
+app.config['SESSION_COOKIE_SAMESITE'] = 'None' if not is_dev else 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = not is_dev
 
 # Initialize extensions
 db = SQLAlchemy(app)
@@ -103,20 +105,31 @@ def create_pneumonia_model():
     return model
 
 def load_pneumonia_model():
-    """Load the trained model"""
+    """Load the trained model with multiple format compatibility"""
     global model
+    import sys
+    model_path = 'model/best_model_final_3class.keras'
+
+    # Attempt 1: Load complete Keras archive directly (standard Keras 3 / TF 2.16+ method)
     try:
-        import sys
+        print("Attempting to load model using tf.keras.models.load_model...", file=sys.stderr, flush=True)
+        model = tf.keras.models.load_model(model_path, compile=False)
+        print("[SUCCESS] Model loaded successfully via load_model!", file=sys.stderr, flush=True)
+        return True
+    except Exception as e1:
+        print(f"[INFO] load_model could not load directly: {e1}. Falling back to architecture + load_weights...", file=sys.stderr, flush=True)
+
+    # Attempt 2: Recreate architecture and load weights
+    try:
         print("Initializing model architecture...", file=sys.stderr, flush=True)
         model = create_pneumonia_model()
         print("Loading weights into model...", file=sys.stderr, flush=True)
-        model.load_weights('model/best_model_final_3class.keras')
-        print("[SUCCESS] Model loaded successfully!", file=sys.stderr, flush=True)
+        model.load_weights(model_path)
+        print("[SUCCESS] Model loaded successfully via load_weights!", file=sys.stderr, flush=True)
         return True
-    except Exception as e:
-        import sys
+    except Exception as e2:
         import traceback
-        print(f"[ERROR] Error loading model: {e}", file=sys.stderr, flush=True)
+        print(f"[ERROR] Both model loading methods failed: {e2}", file=sys.stderr, flush=True)
         traceback.print_exc(file=sys.stderr)
         return False
 
@@ -257,11 +270,21 @@ def dashboard():
         .order_by(Prediction.timestamp.desc()).limit(10).all()
     return render_template('dashboard.html', predictions=predictions)
 
+FREE_GUEST_LIMIT = 3
+
 @app.route('/predict', methods=['GET', 'POST'])
-@login_required
 def predict():
-    """Upload and predict"""
+    """Upload and predict with free guest trial support"""
+    guest_used = session.get('guest_prediction_count', 0)
+    remaining_guest_trials = max(0, FREE_GUEST_LIMIT - guest_used)
+
     if request.method == 'POST':
+        # Check quota for unauthenticated guests
+        if not current_user.is_authenticated:
+            if remaining_guest_trials <= 0:
+                flash(f'You have used all {FREE_GUEST_LIMIT} free guest predictions. Please sign up or login to continue analyzing X-rays.', 'warning')
+                return redirect(url_for('register'))
+
         # Check if files are present
         if 'images' not in request.files:
             flash('No file uploaded!', 'danger')
@@ -271,10 +294,16 @@ def predict():
         predictions = []
         
         for file in files:
+            # Check remaining quota per image for guest users
+            if not current_user.is_authenticated:
+                current_used = session.get('guest_prediction_count', 0)
+                if current_used >= FREE_GUEST_LIMIT:
+                    flash(f'Free guest trial limit reached ({FREE_GUEST_LIMIT}/{FREE_GUEST_LIMIT}). Please create an account or login for unlimited predictions.', 'warning')
+                    break
+
             if file and allowed_file(file.filename):
                 # Save file
                 filename = secure_filename(file.filename)
-                # Add timestamp to avoid duplicates
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_')
                 filename = timestamp + filename
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
@@ -284,19 +313,24 @@ def predict():
                 result = predict_image(filepath)
                 
                 if result:
-                    # Save to database
-                    prediction = Prediction(
-                        filename=filename,
-                        prediction=result['label'],
-                        confidence=result['confidence'],
-                        normal_prob=result['normal_prob'],
-                        not_xray_prob=result['not_xray_prob'],
-                        pneumonia_prob=result['pneumonia_prob'],
-                        user_id=current_user.id
-                    )
-                    db.session.add(prediction)
-                    db.session.commit()
-                    
+                    # Save to database if user is authenticated
+                    if current_user.is_authenticated:
+                        prediction = Prediction(
+                            filename=filename,
+                            prediction=result['label'],
+                            confidence=result['confidence'],
+                            normal_prob=result['normal_prob'],
+                            not_xray_prob=result['not_xray_prob'],
+                            pneumonia_prob=result['pneumonia_prob'],
+                            user_id=current_user.id
+                        )
+                        db.session.add(prediction)
+                        db.session.commit()
+                    else:
+                        # Increment guest prediction count in session
+                        session['guest_prediction_count'] = session.get('guest_prediction_count', 0) + 1
+                        session.modified = True
+
                     predictions.append({
                         'filename': filename,
                         'label': result['label'],
@@ -305,11 +339,26 @@ def predict():
                 else:
                     flash(f'Error processing {file.filename}', 'danger')
         
+        # Recalculate remaining quota after processing
+        guest_used = session.get('guest_prediction_count', 0)
+        remaining_guest_trials = max(0, FREE_GUEST_LIMIT - guest_used)
+
         if predictions:
             flash(f'Successfully processed {len(predictions)} image(s)!', 'success')
-            return render_template('predict.html', predictions=predictions)
+            return render_template(
+                'predict.html', 
+                predictions=predictions, 
+                free_limit=FREE_GUEST_LIMIT, 
+                guest_used=guest_used, 
+                remaining_trials=remaining_guest_trials
+            )
     
-    return render_template('predict.html')
+    return render_template(
+        'predict.html', 
+        free_limit=FREE_GUEST_LIMIT, 
+        guest_used=guest_used, 
+        remaining_trials=remaining_guest_trials
+    )
 
 @app.route('/history')
 @login_required
@@ -333,7 +382,6 @@ def view_prediction(prediction_id):
     return render_template('view_prediction.html', prediction=prediction)
 
 @app.route('/uploads/<filename>')
-@login_required
 def uploaded_file(filename):
     """Serve uploaded files"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -355,9 +403,10 @@ def too_large(e):
 def server_error(e):
     import traceback
     err_msg = traceback.format_exc()
-    print("Detailed 500 Error Traceback:")
-    print(err_msg)
-    return f"<h3>Internal Server Error</h3><pre>{err_msg}</pre>", 500
+    import sys
+    print("Internal Server Error Traceback:", file=sys.stderr)
+    print(err_msg, file=sys.stderr)
+    return render_template('500.html'), 500
 
 # ============================================================================
 # INITIALIZE DATABASE & LOAD MODEL AT STARTUP (Required for Gunicorn/Render)
